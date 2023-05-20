@@ -45,3 +45,5 @@ P1/SPIN1:
 
 * Very early in development - may malfunction, or outright fail to build
 * Doesn't support one-time programming interface
+* Doesn't support PWM data output
+
