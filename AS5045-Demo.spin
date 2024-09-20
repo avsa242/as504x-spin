@@ -1,41 +1,32 @@
 {
-    --------------------------------------------
-    Filename: AS504X-Demo.spin
-    Author: Jesse Burt
-    Description: Demo of the AS504x encoder driver
-    Copyright (c) 2023
-    Started May 19, 2023
-    Updated May 20, 2023
-    See end of file for terms of use.
-    --------------------------------------------
+----------------------------------------------------------------------------------------------------
+    Filename:       AS504X-Demo.spin
+    Description:    Demo of the AS504x encoder driver
+    Author:         Jesse Burt
+    Started:        May 19, 2023
+    Updated:        Sep 20, 2024
+    Copyright (c) 2024 - See end of file for terms of use.
+----------------------------------------------------------------------------------------------------
 }
 
 CON
 
-    _clkmode    = cfg#_clkmode
-    _xinfreq    = cfg#_xinfreq
+    _clkmode    = xtal1+pll16x
+    _xinfreq    = 5_000_000
 
-' -- User-defined constants
-    SER_BAUD    = 115_200
-    LED         = cfg#LED1
-
-    { SPI configuration }
-    CS_PIN      = 16
-    SCK_PIN     = 17
-    MISO_PIN    = 18
-' --
 
 OBJ
 
-    cfg:        "boardcfg.flip"
-    ser:        "com.serial.terminal.ansi"
     time:       "time"
-    encoder:    "input.encoder.as504x"
+    ser:        "com.serial.terminal.ansi" | SER_BAUD=115_200
+    encoder:    "input.encoder.as504x" | CS=0, SCK=1, MISO=2
+
 
 PUB main() | angle, pos_per
 
     setup()
-    encoder.set_model(encoder.AS5045)
+    encoder.set_model(encoder.AS5045)           ' AS5040, AS5043, AS5045
+
     repeat
         angle := encoder.degrees_abs()
         pos_per := encoder.percent()
@@ -43,14 +34,15 @@ PUB main() | angle, pos_per
         ser.printf2(@"%3.3d.%03.3ddeg\n\r", (angle/1000), (angle//1000))
         ser.printf2(@"%3.3d.%02.2d%% of full turn", (pos_per/100), (pos_per//100))
 
+
 PUB setup()
 
-    ser.start(SER_BAUD)
+    ser.start()
     time.msleep(30)
     ser.clear
-    ser.strln(string("Serial terminal started"))
+    ser.strln(@"Serial terminal started")
 
-    if ( encoder.startx(CS_PIN, SCK_PIN, MISO_PIN) )
+    if ( encoder.start() )
         ser.strln(@"AS504x driver started")
     else
         ser.strln(@"AS504x driver failed to start - halting")
@@ -59,7 +51,7 @@ PUB setup()
 
 DAT
 {
-Copyright 2023 Jesse Burt
+Copyright 2024 Jesse Burt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,

@@ -1,16 +1,21 @@
 {
-    --------------------------------------------
-    Filename: input.encoder.as504x.spin
-    Author: Jesse Burt
-    Description: AS504x-series magnetic encoders driver (AS5040, AS5043, AS5045)
-    Copyright (c) 2023
-    Started May 19, 2023
-    Updated May 20, 2023
-    See end of file for terms of use.
-    --------------------------------------------
+----------------------------------------------------------------------------------------------------
+    Filename:       input.encoder.as504x.spin
+    Description:    AS504x-series magnetic encoders driver (AS5040, AS5043, AS5045)
+    Author:         Jesse Burt
+    Started:        May 19, 2023
+    Updated:        Sep 20, 2024
+    Copyright (c) 2024 - See end of file for terms of use.
+----------------------------------------------------------------------------------------------------
 }
 
 CON
+
+    { default I/O settings; these can be overridden in the parent object }
+    CS          = 0
+    SCK         = 1
+    MISO        = 2
+
 
     { encoder model symbols }
     AS5040      = 16                            ' equivalent to number of bits shifted out
@@ -25,6 +30,7 @@ CON
     { driver startup delay (can be overriden in the parent object's declaration of this object) }
     T_POR       = core.T_POR_SLOW
 
+
 VAR
 
     long _CS
@@ -32,25 +38,33 @@ VAR
     word _data_mask
     byte _model, _status
 
+
 OBJ
 
 { decide: Bytecode SPI engine, or PASM? Default is PASM if BC isn't specified }
 #ifdef AS504X_SPI_BC
-    spi : "com.spi.25khz.nocog"                 ' BC I2C engine
+    spi:    "com.spi.25khz.nocog"               ' BC I2C engine
 #else
-    spi : "com.spi.1mhz"                        ' PASM SPI engine (1MHz)
+    spi:    "com.spi.1mhz"                      ' PASM SPI engine (1MHz)
 #endif
-    core: "core.con.as504x"                     ' hw-specific low-level const's
-    time: "time"                                ' Basic timing functions
+    core:   "core.con.as504x"                   ' hw-specific low-level const's
+    time:   "time"                              ' Basic timing functions
+
 
 PUB null()
 ' This is not a top-level object
 
+
+PUB start(): status
+' Start the driver using default I/O settings
+    return startx(CS, SCK, MISO)
+
+
 PUB startx(CS_PIN, SCK_PIN, MISO_PIN): status
 ' Start using custom IO pins
-'   CS_PIN: chip/slave-select (active low)
-'   SCK_PIN: serial clock
-'   MISO_PIN: master-in slave-out
+'   CS_PIN:     chip/slave-select (active low)
+'   SCK_PIN:    serial clock
+'   MISO_PIN:   master-in slave-out
 '   Returns:
 '       cog/core ID+1 on success
 '       0 on failure
@@ -67,19 +81,23 @@ PUB startx(CS_PIN, SCK_PIN, MISO_PIN): status
     ' Lastly - make sure you have at least one free core/cog
     return FALSE
 
+
 PUB stop()
 ' Stop the driver
     spi.deinit()
     _CS := 0
 
+
 PUB defaults()
 ' Set factory defaults
     set_model(AS5045)
+
 
 PUB degrees_abs(): d
 ' Encoder position
 '   Returns: milli-degrees
     return encoder_word2deg_abs( encoder_data() )
+
 
 PUB encoder_data(): d | tmp
 ' Encoder ADC word
@@ -95,6 +113,7 @@ PUB encoder_data(): d | tmp
     _status := (tmp & core.STATUS_MASK)
     return ((tmp >> core.DATA_LSB) & _data_mask)
 
+
 PUB encoder_word2deg_abs(w): d
 ' Convert encoder ADC word to thousandths (0.001) of a degree
 '   NOTE: set_model() must have been called prior to this method to ensure the scaling
@@ -104,6 +123,7 @@ PUB encoder_word2deg_abs(w): d
 '       absolute position in thousandths of a degree (example: 26806 == 26.806deg)
     return ((w * _encoder_res) / 1000)
 
+
 PUB encoder_word2percent(w): p
 ' Convert encoder ADC word to hundredths of a percent of absolute position
 '   NOTE: set_model() must have been called prior to this method to ensure the scaling
@@ -111,6 +131,7 @@ PUB encoder_word2percent(w): p
 '   Returns:
 '       absolute position in hundredths of a percent (example: 744 == 7.44%)
     return ((w * 1_0000) / _data_mask)
+
 
 PUB linearity_error(): f
 ' Flag indicating a linearity error in the last measurement
@@ -120,6 +141,7 @@ PUB linearity_error(): f
 '   NOTE: This function only returns valid data if the device's One-Time-Programmable register
 '       'CompEn' was clear during programming
     return ((_status & core.LIN_BITS) <> 0)
+
 
 PUB mag_field_range(): s
 ' Range of magnetic field strength experienced by device
@@ -131,11 +153,13 @@ PUB mag_field_range(): s
 '       set during programming
     return ((_status & core.MAG_FLD_BITS) >> core.MAG_FLD)
 
+
 PUB percent(): p
 ' Percentage of one full revolution (absolute position)
 '   Returns:
 '       absolute position in hundredths of a percent
     return (encoder_word2percent( encoder_data() ))
+
 
 PUB set_model(m): s
 ' Set specific model of AS504x
@@ -157,9 +181,10 @@ PUB set_model(m): s
 
     _model := m
 
+
 DAT
 {
-Copyright 2023 Jesse Burt
+Copyright 2024 Jesse Burt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,

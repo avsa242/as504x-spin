@@ -1,5 +1,5 @@
 # as5045-spin 
---------------
+-------------
 
 This is a P8X32A/Propeller, P2X8C4M64P/Propeller 2 driver object for the AS504x-series magnetic rotary position sensor/encoder.
 
@@ -33,10 +33,10 @@ P1/SPIN1:
 
 | Processor | Language | Compiler               | Backend      | Status                |
 |-----------|----------|------------------------|--------------|-----------------------|
-| P1        | SPIN1    | FlexSpin (6.1.1)       | Bytecode     | OK                    |
-| P1        | SPIN1    | FlexSpin (6.1.1)       | Native/PASM  | OK                    |
-| P2        | SPIN2    | FlexSpin (6.1.1)       | NuCode       | Not yet implemented   |
-| P2        | SPIN2    | FlexSpin (6.1.1)       | Native/PASM2 | Not yet implemented   |
+| P1        | SPIN1    | FlexSpin (6.9.4)       | Bytecode     | OK                    |
+| P1        | SPIN1    | FlexSpin (6.9.4)       | Native/PASM  | OK                    |
+| P2        | SPIN2    | FlexSpin (6.9.4)       | NuCode       | Not yet implemented   |
+| P2        | SPIN2    | FlexSpin (6.9.4)       | Native/PASM2 | Not yet implemented   |
 
 (other versions or toolchains not listed are not supported, and _may or may not_ work)
 
